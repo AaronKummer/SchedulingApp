@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="CustomerAddLabel" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="683.0" prefWidth="824.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.CustomerController">
+   <children>
+      <Label alignment="TOP_CENTER" layoutX="300.0" layoutY="14.0" prefHeight="38.0" prefWidth="226.0" style="-fx-border-color: teal;" text="Customers" textAlignment="CENTER">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+      </Label>
+      <AnchorPane layoutX="16.0" layoutY="102.0" prefHeight="404.0" prefWidth="363.0" style="-fx-background-color: white;">
+         <children>
+            <TableView fx:id="CustomersTable" layoutY="1.0" prefHeight="403.0" prefWidth="363.0" style="-fx-border-color: black; -fx-border-radius: 5;">
+              <columns>
+                <TableColumn fx:id="CustomerID" prefWidth="63.0" text="ID" />
+                <TableColumn fx:id="CustomerName" prefWidth="175.0" text="Customer Name" />
+                <TableColumn fx:id="CustomerPhone" prefWidth="123.0" text="Phone" />
+              </columns>
+            </TableView>
+         </children>
+      </AnchorPane>
+      <TitledPane alignment="CENTER" animated="false" layoutX="413.0" layoutY="100.0" prefHeight="464.0" prefWidth="374.0" text="Customer Details">
+         <content>
+            <GridPane prefHeight="120" prefWidth="300.0">
+               <children>
+                   <Label fx:id="CustomerCustomerNameLabel" text="Company Name " GridPane.rowIndex="1" />
+                   <Label fx:id="CustomerAddressLabel" text="Address " GridPane.rowIndex="2" />
+                   <Label fx:id="CustomerPostalCodeLabel" text="Postal Code " GridPane.rowIndex="3" />
+                   <Label fx:id="CustomerPhoneLabel" text="Phone No. " GridPane.rowIndex="4" />
+                   <Label fx:id="CustomerDivisionIDLabel" text="Division " GridPane.rowIndex="5" />
+
+                   <TextField fx:id="CustomerCustomerNameTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                   <TextField fx:id="CustomerAddressTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                   <TextField fx:id="CustomerPostalCodeTextField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                   <TextField fx:id="CustomerPhoneTextField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                   <ComboBox fx:id="CustomerDivisionComboBox" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+               </children>
+            </GridPane>
+         </content>
+      </TitledPane>
+      <ButtonBar layoutX="587.0" layoutY="564.0" prefHeight="40.0" prefWidth="200.0">
+        <buttons>
+          <Button fx:id="CustomerSaveButton" onAction="#SaveButtonHandler" minWidth="66.0" mnemonicParsing="false" prefHeight="26.0" text="Save" />
+        </buttons>
+      </ButtonBar>
+      <ButtonBar layoutX="500.0" layoutY="613.0" prefHeight="40.0" prefWidth="200.0">
+        <buttons>
+            <Button fx:id="Back" mnemonicParsing="false" onAction="#BackButtonHandler" text="Back" />
+            <Button fx:id="AddButton" mnemonicParsing="false" onAction="#AddButtonHandler" text="Add" />
+            <Button fx:id="DeleteButton" mnemonicParsing="false" onAction="#DeleteButtonHandler" text="Delete" />
+        </buttons>
+      </ButtonBar>
+
+      <Label fx:id="CustomerLabel" layoutX="542.0" layoutY="52.0" prefHeight="40.0" prefWidth="90.0">
+         <font>
+            <Font name="System Bold Italic" size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="34.0" layoutY="517.0" prefHeight="27.0" prefWidth="327.0" text="Select a Customer to update">
+         <font>
+            <Font name="System Bold Italic" size="18.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
