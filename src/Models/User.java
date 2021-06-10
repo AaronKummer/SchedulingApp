@@ -1,5 +1,8 @@
 package Models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
 
     private static int userID; //auto incremented in database
@@ -43,4 +46,7 @@ public class User {
     public static void setPassword(String password) {
         User.password = password;
     }
+
+
+
 }

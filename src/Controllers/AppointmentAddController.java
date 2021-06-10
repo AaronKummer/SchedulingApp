@@ -93,6 +93,9 @@ public class AppointmentAddController implements Initializable {
     @FXML
     private Button AppointmentBackButton;
 
+    /**
+     * initialize controller
+     */
     @Override
     public void initialize(URL url, ResourceBundle bundle) {
 
@@ -124,6 +127,9 @@ public class AppointmentAddController implements Initializable {
 
     }
 
+    /**
+     * set contact options
+     */
     private  void SetContactOptions() {
         this.contacts = Contact.getAllContacts();
         ObservableList<String> contactsList = FXCollections.observableArrayList();
@@ -132,7 +138,10 @@ public class AppointmentAddController implements Initializable {
         }
         AppointmentContactComboBox.setItems(contactsList);
     }
-    
+
+    /**
+     * set customer options
+     */
     private  void SetCustomerOptions() {
         this.customers = Customer.getAllCustomersLite();
         ObservableList<String> customersList = FXCollections.observableArrayList();
@@ -142,13 +151,19 @@ public class AppointmentAddController implements Initializable {
         AppointmentCustomerComboBox.setItems(customersList);
     }
 
-
+    /**
+     * set location options for combo box
+     */
     private void SetLocationOptions() {
         ObservableList<String> locationList = FXCollections.observableArrayList();
         locationList.addAll("Phoenix", "Arizona", "White Plains", "New York", "Montreal", "Canada", "London");
         AppointmentLocationComboBox.setItems(locationList);
     }
 
+    /**
+     * Saves appointment
+     * discussion of lambda
+     */
     @FXML
     private void Save() throws Exception {
         // Validate time input boxes
@@ -208,6 +223,7 @@ public class AppointmentAddController implements Initializable {
                                         endTime
                                 );
                             } catch (Exception e) {
+                                System.out.println(e.getMessage());
                             }
                         }
                     } catch (Exception e) {
@@ -220,11 +236,17 @@ public class AppointmentAddController implements Initializable {
         this.Back();
     }
 
+    /**
+     * cancel button
+     */
     @FXML
     private void Cancel(ActionEvent event) throws IOException {
 
     }
 
+    /**
+     * back button
+     */
     @FXML
     private void Back() throws IOException {
         var root = FXMLLoader.load(getClass().getResource("../Views/AppointmentsMain.fxml"));

@@ -4,8 +4,6 @@ import Models.*;
 
 import java.io.IOException;
 import java.net.URL;
-import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -13,8 +11,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
@@ -47,7 +43,11 @@ public class ReportsController implements Initializable {
     @FXML
     private Tab ReportsSchedule;
     @FXML
+    private TableView<CountryReportPoco> ReportsAppointmentsByCountryTableView;
+    @FXML
     private TableView<MonthReportPoco> ReportsByMonthAndTypeTableView;
+    @FXML
+    private TableView<Appointment> ReportsScheduleTableView;
     @FXML
     private Tab ReportsContactByMonth;
     @FXML
@@ -65,6 +65,28 @@ public class ReportsController implements Initializable {
     private TableColumn<MonthReportPoco,String> ReportsByMonthAndTypeTypeColumn;
     @FXML
     private TableColumn<MonthReportPoco, Integer> ReportsByMonthAndTypeNumberColumn;
+
+    @FXML
+    private TableColumn<Appointment,String> ReportsScheduleContactNameColumn;
+    @FXML
+    private TableColumn<Appointment,Integer> ReportsScheduleAppointmentIDColumn;
+    @FXML
+    private TableColumn<Appointment,String> ReportsScheduleTitleColumn;
+    @FXML
+    private TableColumn<Appointment,String> ReportsScheduleTypeColumn;
+    @FXML
+    private TableColumn<Appointment,String> ReportsScheduleDescriptionColumn;
+    @FXML
+    private TableColumn<Appointment,String> ReportsScheduleStartColumn;
+    @FXML
+    private TableColumn<Appointment,String> ReportsScheduleEndColumn;
+    @FXML
+    private TableColumn<Appointment,Integer> ReportsScheduleCustomerIDColumn;
+
+    @FXML
+    private TableColumn<CountryReportPoco,String> ReportsAppointmentsByCountryCountryNameColumn;
+    @FXML
+    private TableColumn<CountryReportPoco,Integer> ReportsAppointmentsByCountryNumberColumn;
 
     /**
      * Initializes the controller class.
@@ -90,16 +112,66 @@ public class ReportsController implements Initializable {
 
     }
 
+    /**
+     * Generates countries report
+     */
     private void generateCountriesReport() {
+        PropertyValueFactory<CountryReportPoco, String> ReportsScheduleContactNameFactory = new PropertyValueFactory<>("CountryName");
+        PropertyValueFactory<CountryReportPoco, Integer> ReportsScheduleAppointmentIDFactory = new PropertyValueFactory<>("NumberOfCustomers");
+
+        ReportsAppointmentsByCountryCountryNameColumn.setCellValueFactory(ReportsScheduleContactNameFactory);
+        ReportsAppointmentsByCountryNumberColumn.setCellValueFactory(ReportsScheduleAppointmentIDFactory);
+
+        var customerCountryReportObjects = Customer.getAllCustomersWithCountryName();
+        var pocosForReport = new ArrayList<CountryReportPoco>();
+
+        var distinctCountries = customerCountryReportObjects.stream().filter(distinctByKey(CountryReportPoco::getCountryName));
+
+        for (CountryReportPoco country: distinctCountries.collect(Collectors.toList())) {
+            var pocoForReport = new CountryReportPoco();
+            var numOfCustomersWithCountry = 0;
+
+            for (CountryReportPoco crp: customerCountryReportObjects) {
+                var crpName = crp.getCountryName();
+                var countryName = country.getCountryName();
+                if (crpName.equals(countryName) ) {
+                    numOfCustomersWithCountry ++;
+                }
+            }
+
+            pocoForReport.setCountryName(country.getCountryName());
+            pocoForReport.setNumberOfCustomers((int) numOfCustomersWithCountry);
+            pocosForReport.add(pocoForReport);
+        }
+        ReportsAppointmentsByCountryTableView.setItems(FXCollections.observableList(pocosForReport));
+
     }
 
+    /**
+     * Generates Schedule report
+     */
     private void generateScheduleReport() {
+        PropertyValueFactory<Appointment, String> ReportsScheduleContactNameFactory = new PropertyValueFactory<>("ContactName");
+        PropertyValueFactory<Appointment, Integer> ReportsScheduleAppointmentIDFactory = new PropertyValueFactory<>("AppointmentID");
+        PropertyValueFactory<Appointment, String> ReportsScheduleTitleFactory = new PropertyValueFactory<>("Title");
+        PropertyValueFactory<Appointment, String> ReportsScheduleTypeFactory = new PropertyValueFactory<>("Type");
+        PropertyValueFactory<Appointment, String> ReportsScheduleDescriptionFactory = new PropertyValueFactory<>("Description");
+        PropertyValueFactory<Appointment, String> ReportsScheduleStartFactory = new PropertyValueFactory<>("Start");
+        PropertyValueFactory<Appointment, String> ReportsScheduleEndFactory = new PropertyValueFactory<>("End");
+        PropertyValueFactory<Appointment, Integer> ReportsScheduleCustomerIDFactory = new PropertyValueFactory<>("CustomerID");
 
-    }
+        ReportsScheduleContactNameColumn.setCellValueFactory(ReportsScheduleContactNameFactory);
+        ReportsScheduleAppointmentIDColumn.setCellValueFactory(ReportsScheduleAppointmentIDFactory);
+        ReportsScheduleTitleColumn.setCellValueFactory(ReportsScheduleTitleFactory);
+        ReportsScheduleTypeColumn.setCellValueFactory(ReportsScheduleTypeFactory);
+        ReportsScheduleDescriptionColumn.setCellValueFactory(ReportsScheduleDescriptionFactory);
+        ReportsScheduleStartColumn.setCellValueFactory(ReportsScheduleStartFactory);
+        ReportsScheduleEndColumn.setCellValueFactory(ReportsScheduleEndFactory);
+        ReportsScheduleCustomerIDColumn.setCellValueFactory(ReportsScheduleCustomerIDFactory);
 
-    private void setReportsContactsByMonthTable() throws SQLException, Exception {
-        var appointments = Appointment.getAppointmentList();
-
+        ReportsScheduleTableView.setItems(this.appointments);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        List<ContactReportPoco> contactsReport = new ArrayList();
     }
 
     /**
@@ -112,13 +184,14 @@ public class ReportsController implements Initializable {
 
     /**
      * Generates Month/Type report
+     * discussion of lambda
      */
     private void generateMonthTypeReport() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         var distinctAppointmentsByType = this.appointments.stream().filter(distinctByKey(Appointment::getType));
         List<MonthReportPoco> monthsReport = new ArrayList();
         for (Appointment appointment : distinctAppointmentsByType.collect(Collectors.toList())) {
-            var monthNum = LocalDateTime.parse(appointment.getStart(),formatter).getMonth().getValue();
+            var monthNum = appointment.getDateAsLocalDate().getMonth().getValue();
             var monthReportPoco = new MonthReportPoco(monthNum, appointment.getType());
             long numOfAptsWithType = this.appointments.stream()
                     .filter(c -> appointment.getType().equals(c.getType()))
@@ -130,6 +203,9 @@ public class ReportsController implements Initializable {
         ReportsByMonthAndTypeTableView.setItems(FXCollections.observableList(monthsReport));
     }
 
+    /**
+     * Handles back button
+     */
     @FXML
     private void ReportsMainMenuButtonHandler(ActionEvent event) throws IOException {
         var root = FXMLLoader.load(getClass().getResource("../Views/Main.fxml"));

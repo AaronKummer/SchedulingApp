@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+
+import Utilities.DateTime;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -60,19 +62,22 @@ public class AppointmentsMainController implements Initializable {
     @FXML
     private RadioButton AppointmentMonthRadioButton;
     @FXML
+    private RadioButton AppointmentAllRadioButton;
+    @FXML
     private Button Back;
 
     private ToggleGroup RadioButtonToggleGroup;
     private boolean isWeekly;
+    private boolean isMonthly;
     public static Appointment selectedAppointment;
 
     ObservableList<Appointment> appointments = FXCollections.observableArrayList();
 
     private final DateTimeFormatter datetimeDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    //private final ZoneId localZoneID = ZoneId.of("UTC-8");
-    //private final ZoneId localZoneID = ZoneId.systemDefault();
-    //private final ZoneId utcZoneID = ZoneId.of("UTC");
 
+    /**
+     * init controller
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.selectedAppointment = null;
@@ -99,31 +104,42 @@ public class AppointmentsMainController implements Initializable {
         RadioButtonToggleGroup = new ToggleGroup();
         AppointmentWeekRadioButton.setToggleGroup(RadioButtonToggleGroup);
         AppointmentMonthRadioButton.setToggleGroup(RadioButtonToggleGroup);
-        AppointmentWeekRadioButton.setSelected(true);
+        AppointmentAllRadioButton.setToggleGroup(RadioButtonToggleGroup);
+        AppointmentWeekRadioButton.setSelected(false);
         AppointmentMonthRadioButton.setSelected(false);
-
-        isWeekly = true;
+        AppointmentAllRadioButton.setSelected(true);
+        isWeekly = false;
+        isMonthly = false;
 
         try {
             GetAppointments();
         } catch (SQLException ex) {
             System.out.println(ex);
         }
-
     }
 
+    /**
+     * gets appointments and filters
+     */
     public void GetAppointments() throws SQLException {
         appointments.clear();
         appointments = Appointment.getAppointmentList();
-        //AppointmentsTable.setItems(Appointment.getAppointmentList());
+
         //filter appointments by week or month
         if (isWeekly) {
             filterAppointmentsByWeek(appointments);
-        } else {
+        } else
+        if (isMonthly) {
             filterAppointmentsByMonth(appointments);
+        }
+        else {
+            AppointmentsTable.setItems(appointments);
         }
     }
 
+    /**
+     * goes to add appointment view
+     */
     @FXML
     private void AddAppointment(ActionEvent event) throws IOException {
         this.selectedAppointment = null;
@@ -135,6 +151,9 @@ public class AppointmentsMainController implements Initializable {
         stage.show();
     }
 
+    /**
+     * goes to update appointment view
+     */
     @FXML
     private void UpdateAppointment(ActionEvent event) throws IOException {
         this.selectedAppointment = AppointmentsTable.getSelectionModel().getSelectedItem();
@@ -154,6 +173,9 @@ public class AppointmentsMainController implements Initializable {
         }
     }
 
+    /**
+     * deletes appointment
+     */
     @FXML
     private void DeleteAppointmentButton(ActionEvent event) throws Exception {
         this.selectedAppointment = AppointmentsTable.getSelectionModel().getSelectedItem();
@@ -168,21 +190,42 @@ public class AppointmentsMainController implements Initializable {
         this.GetAppointments();
     }
 
+    /**
+     * week radio
+     */
     @FXML
     private void AppointmentWeekRadioButton(ActionEvent event) throws SQLException, Exception {
         isWeekly = true;
+        isMonthly = false;
         this.GetAppointments();
     }
 
+    /**
+     * all radio
+     */
+    @FXML
+    private void AppointmentAllRadioButton(ActionEvent event) throws SQLException, Exception {
+        isWeekly = false;
+        isMonthly = false;
+        this.GetAppointments();
+    }
+
+    /**
+     * month radio
+     */
     @FXML
     private void AppointmentMonthRadioButton(ActionEvent event) throws SQLException, Exception {
         isWeekly = false;
+        isMonthly = true;
         GetAppointments();
 
     }
 
+    /**
+     * filters based on radio
+     */
     public void filterAppointmentsByMonth(ObservableList appointments) throws SQLException {
-        var now = LocalDate.now();
+        var now = LocalDate.now(DateTime.getZoneId());
         var nowPlus1Month = now.plusMonths(1);
 
         FilteredList<Appointment> filteredData = new FilteredList<>(appointments);
@@ -195,8 +238,11 @@ public class AppointmentsMainController implements Initializable {
         AppointmentsTable.setItems(filteredData);
     }
 
+    /**
+     * filters
+     */
     public void filterAppointmentsByWeek(ObservableList appointments) {
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(DateTime.getZoneId());
         LocalDate nowPlus1Week = now.plusWeeks(1);
 
         FilteredList<Appointment> filteredData = new FilteredList<>(appointments);
@@ -209,6 +255,9 @@ public class AppointmentsMainController implements Initializable {
         AppointmentsTable.setItems(filteredData);
     }
 
+    /**
+     * back button
+     */
     @FXML
     private void Back(ActionEvent event) throws IOException {
         var root = FXMLLoader.load(getClass().getResource("../Views/Main.fxml"));

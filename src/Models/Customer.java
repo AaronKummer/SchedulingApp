@@ -1,12 +1,9 @@
 package Models;
 
 import java.sql.*;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
 import Controllers.LoginController;
 import Utilities.ConnectDB;
 import Utilities.DateTime;
@@ -15,8 +12,6 @@ public class Customer {
     private int customerID;
     private String customerName;
     private int active;
-    private Date createDate;
-    private String createdBy;
     private String address;
     private String city;
     private String postalCode;
@@ -25,7 +20,6 @@ public class Customer {
     private Date lastUpdate;
     private String lastUpdateBy;
     private int divisionID;
-    private String divisionName;
 
     public Customer(int customerID, String customerName, int active, String address, String city, String postalCode, String phone, String country, Date lastUpdate, String lastUpdateBy) {
         setCustomerID(customerID);
@@ -80,16 +74,8 @@ public class Customer {
         return customerName;
     }
 
-    public int getCustomerActive() {
-        return active;
-    }
-
     public String getCustomerAddress() {
         return address;
-    }
-
-    public String getCustomerCity() {
-        return city;
     }
 
     public String getCustomerPostalCode() {
@@ -100,23 +86,10 @@ public class Customer {
         return phone;
     }
 
-    public String getCustomerCountry() {
-        return country;
-    }
-
-    public Date getCustomerLastUpdate() {
-        return lastUpdate;
-    }
-
-    public String getCustomerLastUpdateBy() {
-        return lastUpdateBy;
-    }
-
     public int getDivisionID() {
         return this.divisionID;
     }
-    //setters
-    
+
     public void setCustomerID(int customerID) {
 
         this.customerID = customerID;
@@ -137,7 +110,6 @@ public class Customer {
     public void setCustomerAddress(String address) {
         this.address = address;
     }
-
 
     public void setCustomerCity(String city) {
         this.city = city;
@@ -180,7 +152,6 @@ public class Customer {
             e.printStackTrace();
         }
         return customerName;
-
     }
 
     public static List<Customer> getAllCustomersLite() {
@@ -250,6 +221,31 @@ public class Customer {
         return customers;
     }
 
+    // gets customers, divisions and countries for report
+    public static List<CountryReportPoco> getAllCustomersWithCountryName() {
+        List<CountryReportPoco> countryReportPocos = new ArrayList<>();
+        ResultSet result;
+        try (var statement = ConnectDB.makeConnection().prepareStatement(
+                "SELECT customers.Customer_Name, customers.Customer_ID, customers.Division_ID, first_level_divisions.Division_ID, first_level_divisions.COUNTRY_ID, countries.Country_ID, countries.Country" +
+                    " FROM customers, first_level_divisions, countries " +
+                    " WHERE customers.Division_ID = first_level_divisions.Division_ID AND first_level_divisions.COUNTRY_ID = countries.Country_ID")) {
+            result = statement.executeQuery();
+            while (result.next()) {
+                var countryReport = new CountryReportPoco();
+                countryReport.setCountryName(result.getString("Country"));
+                countryReport.setCustomerID(result.getInt("Customer_ID"));
+                countryReportPocos.add(countryReport);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return countryReportPocos;
+    }
+
     public static void updateCustomer(Integer customerId, String customerName, int divisionID, String address, String postalCode, String phone) {
         PreparedStatement statement;
 
@@ -262,7 +258,7 @@ public class Customer {
                             ", Postal_Code = '" + postalCode +"'" +
                             ", Phone = '" + phone +"'" +
                             ", Division_ID = '" + divisionID +"'" +
-                            ", Last_Update = '" + LocalDateTime.now() +"'" +
+                            ", Last_Update = '" + DateTime.getNowTimeStamp() +"'" +
                             ", Last_Updated_By = '" + LoginController.userID +"'" +
                             " WHERE Customer_ID = " + customerId
             );
@@ -290,7 +286,7 @@ public class Customer {
             statement.setString(4, phone);
             statement.setInt(5, divisionID);
             statement.setInt(6, LoginController.userID);
-            statement.setDate(7, now);
+            statement.setTimestamp(7, DateTime.getNowTimeStamp());
             statement.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();

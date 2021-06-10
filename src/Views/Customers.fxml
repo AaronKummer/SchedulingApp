@@ -38,10 +38,10 @@
          <content>
             <GridPane prefHeight="120" prefWidth="300.0">
                <children>
-                   <Label fx:id="CustomerCustomerNameLabel" text="Company Name " GridPane.rowIndex="1" />
-                   <Label fx:id="CustomerAddressLabel" text="Address " GridPane.rowIndex="2" />
-                   <Label fx:id="CustomerPostalCodeLabel" text="Postal Code " GridPane.rowIndex="3" />
-                   <Label fx:id="CustomerPhoneLabel" text="Phone No. " GridPane.rowIndex="4" />
+                   <Label fx:id="CustomerCustomerNameLabel" text="Customer Name " GridPane.rowIndex="1" />
+                   <Label fx:id="CustomerAddressLabel" text="Address" GridPane.rowIndex="2" />
+                   <Label fx:id="CustomerPostalCodeLabel" text="Zip Code" GridPane.rowIndex="3" />
+                   <Label fx:id="CustomerPhoneLabel" text="Phone" GridPane.rowIndex="4" />
                    <Label fx:id="CustomerDivisionIDLabel" text="Division " GridPane.rowIndex="5" />
 
                    <TextField fx:id="CustomerCustomerNameTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />

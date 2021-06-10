@@ -7,10 +7,18 @@ import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import Models.Appointment;
 import Utilities.ConnectDB;
 import Utilities.DateTime;
 import javafx.event.ActionEvent;
@@ -48,6 +56,9 @@ public class LoginController implements Initializable {
     @FXML
     private Label LoginLabel;
 
+    /**
+     * initialize controller
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         try {
@@ -64,6 +75,9 @@ public class LoginController implements Initializable {
         }
     }
 
+    /**
+     * login button
+     */
     @FXML
     private void LoginButtonHandler(ActionEvent event) throws SQLException, IOException {
         var usernameInput = UsernameTextField.getText();
@@ -71,8 +85,10 @@ public class LoginController implements Initializable {
         this.userID = null;
         Parent root;
         Stage stage;
-        System.out.println(passwordInput);
-        if (CheckPassword(usernameInput, passwordInput)) {
+        var userId = CheckPassword(usernameInput, passwordInput);
+        if (userId != null) {
+
+            this.checkAppointments(userId);
             root = FXMLLoader.load(getClass().getResource("../Views/Main.fxml"));
             stage = (Stage) LoginButton.getScene().getWindow();
             Scene scene = new Scene(root);
@@ -80,7 +96,6 @@ public class LoginController implements Initializable {
             stage.show();
         } else {
             this.userID = null;
-            System.out.println("FIRST");
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("");
             alert.setHeaderText("Invalid Credentials");
@@ -89,11 +104,41 @@ public class LoginController implements Initializable {
         }
     }
 
+    /**
+     * checks for appointments within 15 min
+     */
+    private void checkAppointments(Integer userId) {
+        var appointmentsForUser = Appointment.getAppointmentsForUser(userId);
+        for (Appointment apt : appointmentsForUser) {
+            // check if same date as today
+            var aptDate = apt.getDateAsLocalDate();
+
+            if (DateTime.isToday(aptDate)) {
+                var localTime = apt.getStartTimeASLocalTime();
+                long minutes = ChronoUnit.MINUTES.between(LocalTime.now(DateTime.getZoneId()), localTime);
+                // check for appointments within 15 minutes from now
+                if (minutes <= 15 && minutes > 0) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("");
+                    alert.setHeaderText("Appointment Reminder");
+                    alert.setContentText("You have an upcoming appointment in " + minutes + " minutes");
+                    alert.setContentText("\nAppointment ID = " + apt.getAppointmentID() + " at " + apt.getStartDateTime());
+                    Optional<ButtonType> result = alert.showAndWait();
+                }
+            }
+        }
+
+
+    }
+
+    /**
+     * logs login attempt
+     */
     public void logLoginAttempt(String user) {
         try {
             String fileName = "loginLogs.txt";
             BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
-            writer.append(DateTime.getTimeStamp() + " " + user + " " + "\n");
+            writer.append(DateTime.getNowTimeStamp() + " " + user + " " + "\n");
             writer.flush();
             writer.close();
         } catch (IOException e) {
@@ -101,7 +146,10 @@ public class LoginController implements Initializable {
         }
     }
 
-    private boolean CheckPassword(String username, String password) throws SQLException {
+    /**
+     * checks pw
+     */
+    private Integer CheckPassword(String username, String password) throws SQLException {
         ResultSet result;
         this.logLoginAttempt(username);
         try {
@@ -110,11 +158,13 @@ public class LoginController implements Initializable {
             result = statement.executeQuery(sqlStatement);
             while (result.next()) {
                 this.userID = result.getInt("User_ID");
-                return password.equals(result.getString("Password"));
+                if (password.equals(result.getString("Password"))) {
+                    return result.getInt("User_ID");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }System.out.println("reutrning false");
-        return false;
+        return null;
     }
 }

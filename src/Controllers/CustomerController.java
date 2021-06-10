@@ -111,6 +111,9 @@ public class CustomerController implements Initializable {
         this.setupController();
     }
 
+    /**
+     * initialize data
+     */
     public void setupController() {
         this.selectedCustomerID = null;
         this.clearFields();
@@ -141,6 +144,9 @@ public class CustomerController implements Initializable {
                 });
     }
 
+    /**
+     * listener for click on customer row
+     */
     public void customerListener(Customer customer) throws SQLException, Exception {
         CustomerLabel.setText("");
         this.selectedCustomerID = customer.getCustomerID();

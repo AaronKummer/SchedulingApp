@@ -38,21 +38,32 @@ public class MainController implements Initializable {
     Parent root;
     Stage stage;
 
+    /**
+     * init controller
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         System.out.println("initializing the main screen");
 
     }
 
+    /**
+     * goes to customers view
+     */
     @FXML
     private void Customers(ActionEvent event) throws IOException {
         root = FXMLLoader.load(getClass().getResource("../Views/Customers.fxml"));
         stage = (Stage)Customers.getScene().getWindow();
+        stage.setX(400);
+        stage.setY(200);
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
     }
 
+    /**
+     * goes to apts view
+     */
     @FXML
     private void Appointments(ActionEvent event) throws IOException {
         root = FXMLLoader.load(getClass().getResource("../Views/AppointmentsMain.fxml"));
@@ -62,15 +73,23 @@ public class MainController implements Initializable {
         stage.show();
     }
 
+    /**
+     * goes to reports view
+     */
     @FXML
     private void Reports(ActionEvent event) throws IOException {
         root = FXMLLoader.load(getClass().getResource("../Views/Reports.fxml"));
         stage = (Stage)Reports.getScene().getWindow();
+        stage.setX(400);
+        stage.setY(100);
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
     }
 
+    /**
+     * exits program
+     */
     @FXML
     private void Exit(ActionEvent event) throws SQLException {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);

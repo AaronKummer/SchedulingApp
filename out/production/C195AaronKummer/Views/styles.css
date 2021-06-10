@@ -1,6 +1,9 @@
 .main {
-    -fx-background-color: #9edfff;
-    -fx-pref-width: 600.0;
-    -fx-pref-height: 600.0;
+    -fx-pref-width: 300.0;
+    -fx-pref-height: 400.0;
 }
 
+.login {
+    -fx-pref-width: 300.0 !important;
+    -fx-pref-height: 300.0 !important;
+}

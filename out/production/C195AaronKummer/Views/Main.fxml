@@ -7,7 +7,7 @@
 <?import java.net.URL?>
 <AnchorPane styleClass="main" fx:id="MainLabel" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.MainController">
    <children>
-      <VBox layoutX="149.0" layoutY="101.0" prefHeight="170.0" prefWidth="166.0" spacing="15.0" AnchorPane.topAnchor="101.0">
+      <VBox layoutX="75.0" layoutY="100.0" spacing="15.0" AnchorPane.topAnchor="101.0">
          <children>
             <Button fx:id="Customers" graphicTextGap="10.0" mnemonicParsing="false" onAction="#Customers" prefHeight="26.0" prefWidth="166.0" text="Customers" textAlignment="CENTER">
                <font>

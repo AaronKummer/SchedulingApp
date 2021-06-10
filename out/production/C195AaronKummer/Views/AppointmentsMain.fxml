@@ -37,6 +37,11 @@
             <TableColumn fx:id="AppointmentCustomerID" text="CustomerID" />
         </columns>
       </TableView>
+       <RadioButton fx:id="AppointmentAllRadioButton" layoutX="240.0" layoutY="38.0" mnemonicParsing="false" onAction="#AppointmentAllRadioButton" text="All">
+           <font>
+               <Font name="System Bold" size="14.0" />
+           </font>
+       </RadioButton>
       <RadioButton fx:id="AppointmentWeekRadioButton" layoutX="85.0" layoutY="38.0" mnemonicParsing="false" onAction="#AppointmentWeekRadioButton" text="Current Week">
          <font>
             <Font name="System Bold" size="14.0" />

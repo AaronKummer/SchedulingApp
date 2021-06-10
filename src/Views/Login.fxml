@@ -9,12 +9,13 @@
 <?import javafx.scene.text.Font?>
 
 <?import java.net.URL?>
-<AnchorPane styleClass="main" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.LoginController">
+
+<AnchorPane styleClass="login" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.LoginController">
    <stylesheets>
       <URL value="@styles.css" />
    </stylesheets>
    <children>
-      <AnchorPane layoutX="4.0" layoutY="60.0" prefHeight="172.0" prefWidth="351.0">
+      <AnchorPane layoutX="4.0" layoutY="60.0" prefHeight="140.0" prefWidth="200.0">
          <children>
             <TextField fx:id="UsernameTextField" layoutX="141.0" layoutY="33.0" promptText="Username" />
             <Label fx:id="LoginUsernameLabel" layoutX="24.0" layoutY="32.0" prefHeight="27.0" prefWidth="98.0" textAlignment="CENTER">

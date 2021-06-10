@@ -6,11 +6,14 @@ import Utilities.DateTime;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import static Utilities.DateTime.commonDateFormat;
 
 public class Appointment {
 
@@ -62,8 +65,6 @@ public class Appointment {
     public int getCustomerID(){
         return this.customerID;
     }
-
-
 
     public String getTitle(){
         return this.title;
@@ -135,6 +136,40 @@ public class Appointment {
         this.contactName = contactName;
     }
 
+    public static List<Appointment> getAppointmentsForUser(int userID) {
+        List<Appointment> appointments = new ArrayList<>();
+        PreparedStatement statement;
+        try {
+            System.out.println("trying to query appointments");
+            statement = ConnectDB.makeConnection().prepareStatement(
+                    "SELECT appointments.Appointment_ID, appointments.Title, "
+                            + "appointments.Start, User_ID "
+                            + "FROM appointments "
+                            + "WHERE appointments.User_ID = " + userID
+                            + " ORDER BY 'appointments.Start'");
+
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+
+                var appointmentID = result.getInt("Appointment_ID");
+                var title = result.getString("Title");
+                var startUTC = result.getString("Start").substring(0, 19);
+                appointments.add(new Appointment(appointmentID, title, "", "", "", "", startUTC, "", 0));
+            }
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        return appointments;
+    }
+
     public static ObservableList<Appointment> getAppointmentList() {
         PreparedStatement statement;
         ObservableList<Appointment> appointmentsList = FXCollections.observableArrayList();
@@ -158,10 +193,13 @@ public class Appointment {
                 var location = result.getString("Location");
                 var contact = result.getString("Contact_Name");
                 var type = result.getString("Type");
-                var startUTC = result.getString("Start").substring(0, 19);
-                var endUTC = result.getString("End").substring(0, 19);
+                var startUTC = result.getTimestamp("Start");
+                var endUTC = result.getTimestamp("End");
                 var customerID = result.getInt("Customer_ID");
-                appointmentsList.add(new Appointment(appointmentID, title, description, location, contact, type, startUTC, endUTC, customerID));
+
+                var start =  startUTC.toInstant().atZone(DateTime.getZoneId()).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a"));
+                var end =  endUTC.toInstant().atZone(DateTime.getZoneId()).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a"));
+                appointmentsList.add(new Appointment(appointmentID, title, description, location, contact, type, start, end, customerID));
             }
 
         } catch (SQLException throwables) {
@@ -189,7 +227,7 @@ public class Appointment {
                         ", Contact_ID = '" + contactID +"'" +
                         ", Start = '" + start +"'" +
                         ", End = '" + end +"'" +
-                        ", Last_Update = '" + LocalDateTime.now() +"'" +
+                        ", Last_Update = '" + LocalDateTime.now(DateTime.getZoneId()) +"'" +
                         ", Last_Updated_By = '" + LoginController.userID +"'" +
                         " WHERE Appointment_ID = " + id
             );
@@ -206,6 +244,9 @@ public class Appointment {
 
     public static void createAppointment(String type, String title, String desc, String loc, int contactID, int customerID, LocalDateTime start, LocalDateTime end) {
         try {
+            var startStamp = DateTime.getTimeStampForLocalDate(start);
+            var endStamp = DateTime.getTimeStampForLocalDate(end);
+
             PreparedStatement statement = ConnectDB.makeConnection()
                     .prepareStatement("INSERT INTO appointments (Title, Description, Location, Type, Start, End, Create_Date, Created_By, Customer_ID, User_ID, Contact_ID) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -213,9 +254,9 @@ public class Appointment {
             statement.setString(2, desc);
             statement.setString(3, loc);
             statement.setString(4, type);
-            statement.setTimestamp(5, DateTime.convertToDatabaseColumn(start));
-            statement.setTimestamp(6, DateTime.convertToDatabaseColumn(end));
-            statement.setTimestamp(7, DateTime.convertToDatabaseColumn(end));
+            statement.setTimestamp(5, startStamp);
+            statement.setTimestamp(6, endStamp);
+            statement.setTimestamp(7, DateTime.getNowTimeStamp());
             statement.setInt(8, LoginController.userID);
             statement.setInt(9, customerID);
             statement.setInt(10, LoginController.userID);
@@ -228,7 +269,6 @@ public class Appointment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public Appointment(Integer appointmentID) {
@@ -267,11 +307,25 @@ public class Appointment {
         return this.getStart().split(" ")[0];
     }
 
+    public String getStartDateTime() {
+        return this.getDate() + " - " + this.getStartTime();
+    }
+
     public String getStartTime() {
         return LocalTime.parse(this.getStart().split(" ")[1]).format(DateTimeFormatter.ofPattern("H:mm a"));
     }
 
     public String getEndTime() {
         return LocalTime.parse(this.getEnd().split(" ")[1]).format(DateTimeFormatter.ofPattern("H:mm a"));
+    }
+
+    public LocalTime getStartTimeASLocalTime() {
+        var x = this.getStart();
+        return LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(DateTime.getZoneId()).toLocalTime();
+    }
+
+    public LocalDate getDateAsLocalDate() {
+        var localDate = LocalDate.parse(this.getDate(), commonDateFormat);
+        return localDate.atStartOfDay(DateTime.getZoneId()).toLocalDate();
     }
 }

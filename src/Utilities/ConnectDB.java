@@ -7,7 +7,9 @@ import java.time.Instant;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
+/**
+ * helper for db connection
+ */
 public class ConnectDB {
     public static Connection makeConnection() throws ClassNotFoundException, SQLException, Exception{
         try {
@@ -16,7 +18,10 @@ public class ConnectDB {
         }
         return null;
     }
-    
+
+    /**
+     * helper to close connection
+     */
     public static void closeConnection(Connection connection) throws SQLException{
         connection.close();
         System.out.println("Connection closed.");
