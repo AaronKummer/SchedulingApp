@@ -83,13 +83,13 @@ public class Appointment {
         return this.type;
     }
     
-    public String getStart(){
-        return this.startTime;
-    }
+    public String getStart(){ return this.startTime; }
     
     public String getEnd(){
         return this.endTime;
     }
+
+
 
     public String getCustomerName(){
         return this.customerName;
@@ -394,8 +394,35 @@ public class Appointment {
      * @return
      */
     public LocalTime getStartTimeASLocalTime() {
-        var x = this.getStart();
         return LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(DateTime.getZoneId()).toLocalTime();
+    }
+
+    /**
+     *
+     * @return
+     */
+    public LocalTime getEndTimeASLocalTime() {
+        return LocalDateTime.parse(this.getEnd(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(DateTime.getZoneId()).toLocalTime();
+    }
+
+    /**
+     *
+     * @return
+     */
+    public LocalDateTime getStartTimeASLocalDateTime() {
+        System.out.println(this.getStart());
+        //2021-06-14 9:30 AM
+        var date = LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a")).atZone(DateTime.getZoneId()).toLocalDateTime();
+        return date;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public LocalDateTime getEndTimeASLocalDateTime() {
+        var date = LocalDateTime.parse(this.getEnd(), DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a")).atZone(DateTime.getZoneId()).toLocalDateTime();
+        return date;
     }
 
     /**

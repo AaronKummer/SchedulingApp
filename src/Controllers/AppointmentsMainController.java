@@ -233,7 +233,7 @@ public class AppointmentsMainController implements Initializable {
         FilteredList<Appointment> filteredData = new FilteredList<>(appointments);
         filteredData.setPredicate(row -> {
 
-            LocalDate rowDate = LocalDate.parse(row.getStart(), datetimeDTF);
+            LocalDate rowDate = row.getDateAsLocalDate();
 
             return rowDate.isAfter(now.minusDays(1)) && rowDate.isBefore(nowPlus1Month);
         });
@@ -250,7 +250,7 @@ public class AppointmentsMainController implements Initializable {
         FilteredList<Appointment> filteredData = new FilteredList<>(appointments);
         filteredData.setPredicate(row -> {
 
-            LocalDate rowDate = LocalDate.parse(row.getStart(), datetimeDTF);
+            LocalDate rowDate = row.getDateAsLocalDate();
 
             return rowDate.isAfter(now.minusDays(1)) && rowDate.isBefore(nowPlus1Week);
         });

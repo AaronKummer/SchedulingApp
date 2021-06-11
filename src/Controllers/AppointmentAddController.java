@@ -6,6 +6,7 @@ import Models.Customer;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -20,12 +21,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 /**
@@ -70,7 +66,6 @@ public class AppointmentAddController implements Initializable {
     private DatePicker AppointmentDatePicker;
     @FXML
     private TextField AppointmentTypeTextField;
-
 
     @FXML
     private ComboBox<String> AppointmentLocationComboBox;
@@ -189,6 +184,28 @@ public class AppointmentAddController implements Initializable {
     }
 
     /**
+     *
+     * @param start
+     * @param end
+     * @return
+     */
+    public static Boolean appointmentExists(LocalDateTime start, LocalDateTime end){
+        Boolean returnValue = false;
+        ObservableList<Appointment> appointments = Appointment.getAppointmentList();
+
+        for(Appointment a : appointments){
+            LocalDateTime startTime = a.getStartTimeASLocalDateTime();
+            LocalDateTime endEnd = a.getEndTimeASLocalDateTime();
+
+            if(start.isAfter(startTime) && start.isBefore(endEnd) || end.isAfter(startTime) && end.isBefore(endEnd)){
+                returnValue = true;
+            }
+        }
+
+        return returnValue;
+    }
+
+    /**
      * Saves appointment
      * discussion of lambda
      */
@@ -198,6 +215,14 @@ public class AppointmentAddController implements Initializable {
         LocalDate date = AppointmentDatePicker.getValue();
         var startTime = DateTime.parseTimeTextField(AppointmentStartTextField.getText(), date);
         var endTime = DateTime.parseTimeTextField(AppointmentEndTextField.getText(), date);
+
+        if(this.appointmentExists(startTime, endTime)){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Appointment cannot overlap another appointment.");
+            alert.show();
+            return;
+        }
+
         if (startTime != null && endTime != null) {
             try {
                 if (AppointmentsMainController.selectedAppointment == null) {

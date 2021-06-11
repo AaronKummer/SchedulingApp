@@ -1,12 +1,7 @@
 package Utilities;
 
-import Models.Appointment;
-import javafx.util.converter.LocalDateTimeStringConverter;
-
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
