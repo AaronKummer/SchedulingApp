@@ -7,11 +7,20 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class Division {
     private int divisionID;
     private String divisionName;
     private int countryID;
 
+    /**
+     *
+     * @param divisionName
+     * @param divisionID
+     * @param countryID
+     */
     public Division(String divisionName, int divisionID, int countryID) {
         this.divisionName = divisionName;
         this.divisionID = divisionID;
@@ -26,6 +35,10 @@ public class Division {
         return this.divisionID;
     }
 
+    /**
+     *
+     * @return
+     */
     public static List<Division> getAllDivisions() {
         List<Division> contacts = new ArrayList<>();
         ResultSet result;

@@ -1,5 +1,8 @@
 package Models;
 
+/**
+ *
+ */
 public class ContactReportPoco {
     private int appointmentID;
     private String title;

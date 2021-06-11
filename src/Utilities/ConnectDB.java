@@ -11,6 +11,13 @@ import java.sql.SQLException;
  * helper for db connection
  */
 public class ConnectDB {
+    /**
+     *
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     * @throws Exception
+     */
     public static Connection makeConnection() throws ClassNotFoundException, SQLException, Exception{
         try {
             return DriverManager.getConnection("jdbc:mysql://wgudb.ucertify.com:3306/WJ07Tko", "U07Tko", "53689124839");

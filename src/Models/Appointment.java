@@ -101,42 +101,83 @@ public class Appointment {
         this.appointmentID = appointmentID;
     }
 
+    /**
+     *
+     * @param customerID
+     */
     private void setCustomerID(int customerID){
         this.customerID = customerID;
     }
 
+    /**
+     *
+     * @param title
+     */
     private void setTitle(String title){
         this.title = title;
     }
-    
+
+    /**
+     *
+     * @param description
+     */
     private void setDescription(String description){
         this.description = description;
     }
-    
+
+    /**
+     *
+     * @param location
+     */
     private void setLocation(String location){
         this.location = location;
     }
-    
+
+    /**
+     *
+     * @param type
+     */
     private void setType(String type){
         this.type = type;
     }
 
+    /**
+     *
+     * @param startTime
+     */
     private void setStart(String startTime){
         this.startTime = startTime;
     }
-    
+
+    /**
+     *
+     * @param endTime
+     */
     private void setEnd(String endTime){
         this.endTime = endTime;
     }
 
+    /**
+     *
+     * @param customerName
+     */
     public void setCustomerName(String customerName){
        this.customerName = customerName;
     }
 
+    /**
+     *
+     * @param contactName
+     */
     public void setContactName(String contactName) {
         this.contactName = contactName;
     }
 
+    /**
+     *
+     * @param userID
+     * @return
+     */
     public static List<Appointment> getAppointmentsForUser(int userID) {
         List<Appointment> appointments = new ArrayList<>();
         PreparedStatement statement;
@@ -171,6 +212,10 @@ public class Appointment {
         return appointments;
     }
 
+    /**
+     *
+     * @return
+     */
     public static ObservableList<Appointment> getAppointmentList() {
         PreparedStatement statement;
         ObservableList<Appointment> appointmentsList = FXCollections.observableArrayList();
@@ -216,6 +261,19 @@ public class Appointment {
         return appointmentsList;
     }
 
+    /**
+     *
+     * @param id
+     * @param type
+     * @param title
+     * @param desc
+     * @param loc
+     * @param contactID
+     * @param customerID
+     * @param start
+     * @param end
+     * @param userID
+     */
     public static void updateAppointment(int id, String type, String title, String desc, String loc, int contactID, int customerID, LocalDateTime start, LocalDateTime end, int userID) {
         PreparedStatement statement;
 
@@ -246,6 +304,18 @@ public class Appointment {
         }
     }
 
+    /**
+     *
+     * @param type
+     * @param title
+     * @param desc
+     * @param loc
+     * @param contactID
+     * @param customerID
+     * @param start
+     * @param end
+     * @param userID
+     */
     public static void createAppointment(String type, String title, String desc, String loc, int contactID, int customerID, LocalDateTime start, LocalDateTime end, int userID) {
         try {
             var startStamp = DateTime.getTimeStampForLocalDate(start);
@@ -275,6 +345,10 @@ public class Appointment {
         }
     }
 
+    /**
+     *
+     * @param appointmentID
+     */
     public Appointment(Integer appointmentID) {
         ResultSet result;
         try (var statement = ConnectDB.makeConnection().prepareStatement(
@@ -307,36 +381,68 @@ public class Appointment {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public String getDate() {
         return this.getStart().split(" ")[0];
     }
 
+    /**
+     *
+     * @return
+     */
     public LocalTime getStartTimeASLocalTime() {
         var x = this.getStart();
         return LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(DateTime.getZoneId()).toLocalTime();
     }
 
+    /**
+     *
+     * @return
+     */
     public String getStartDateTime() {
         return this.getDate() + " - " + this.getStartTime();
     }
 
+    /**
+     *
+     * @return
+     */
     public String getStartTime() {
         return this.getStart().split(" ")[1];
     }
 
+    /**
+     *
+     * @return
+     */
     public String getEndTime() {
         return this.getEnd().split(" ")[1];
     }
 
+    /**
+     *
+     * @return
+     */
     public LocalDate getDateAsLocalDate() {
         var localDate = LocalDate.parse(this.getDate(), commonDateFormat);
         return localDate.atStartOfDay(DateTime.getZoneId()).toLocalDate();
     }
 
+    /**
+     *
+     * @return
+     */
     public Integer getUserID() {
         return userID;
     }
 
+    /**
+     *
+     * @param userID
+     */
     public void setUserID(Integer userID) {
         this.userID = userID;
     }

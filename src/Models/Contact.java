@@ -22,13 +22,22 @@ public class Contact {
         return contactID;
     }
 
-
+    /**
+     *
+     * @param name
+     * @param email
+     * @param id
+     */
     public Contact(String name, String email, int id) {
         this.contactEmail = email;
         this.contactName = name;
         this.contactID = id;
     }
 
+    /**
+     *
+     * @return
+     */
     public static List<Contact> getAllContacts() {
         List<Contact> contacts = new ArrayList<>();
         ResultSet result;

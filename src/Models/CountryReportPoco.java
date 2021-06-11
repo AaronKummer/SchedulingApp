@@ -1,5 +1,8 @@
 package Models;
 
+/**
+ *
+ */
 public class CountryReportPoco {
     private String countryName;
     private int numberOfCustomers;

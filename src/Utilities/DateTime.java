@@ -18,11 +18,20 @@ import java.util.Locale;
 public class DateTime {
     public static DateTimeFormatter commonDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-
+    /**
+     *
+     * @return
+     */
     public static ZoneId getZoneId() {
         return ZoneId.systemDefault();
     }
 
+    /**
+     *
+     * @param date1
+     * @param date2
+     * @return
+     */
     public static boolean isSameDay(Date date1, Date date2) {
         LocalDate localDate1 = date1.toInstant()
                 .atZone(ZoneId.systemDefault())
@@ -33,14 +42,29 @@ public class DateTime {
         return localDate1.isEqual(localDate2);
     }
 
+    /**
+     *
+     * @param locDateTime
+     * @return
+     */
     public static Timestamp convertToDatabaseColumn(LocalDateTime locDateTime) {
         return locDateTime == null ? null : Timestamp.valueOf(locDateTime);
     }
 
+    /**
+     *
+     * @param sqlTimestamp
+     * @return
+     */
     public static LocalDateTime convertToEntityAttribute(Timestamp sqlTimestamp) {
         return sqlTimestamp == null ? null : sqlTimestamp.toLocalDateTime();
     }
 
+    /**
+     *
+     * @param date
+     * @return
+     */
     public static java.sql.Timestamp getTimeStampForLocalDate(LocalDateTime date) {
         ZoneId zoneid = ZoneId.of("UTC");
         LocalDateTime localDateTime = LocalDateTime.from(date.atZone(zoneid));
@@ -48,23 +72,42 @@ public class DateTime {
         return timeStamp;
     }
 
+    /**
+     *
+     * @return
+     */
     public static java.sql.Timestamp getNowTimeStamp() {
         ZoneId zoneid = ZoneId.of("UTC");
         LocalDateTime localDateTime = LocalDateTime.now(zoneid);
         java.sql.Timestamp timeStamp = Timestamp.valueOf(localDateTime);
         return timeStamp;
     }
-    
+
+    /**
+     *
+     * @return
+     */
     public static java.sql.Date getDate() {
         java.sql.Date date = java.sql.Date.valueOf(LocalDate.now());
         return date;
     }
 
+    /**
+     *
+     * @param ldt
+     * @return
+     */
     public static String localToUtc(LocalDateTime ldt) {
         ZonedDateTime ldtZoned = ldt.atZone(ZoneId.systemDefault());
         return ldtZoned.withZoneSameInstant(ZoneId.of("UTC")).toString();
     }
 
+    /**
+     *
+     * @param time
+     * @param date
+     * @return
+     */
     public static LocalDateTime parseTimeTextField(String time, LocalDate date) {
         if (!time.isBlank()) {
             if (time.contains("am") || time.contains("AM") || time.contains("pm") || time.contains("PM")) {
@@ -98,6 +141,11 @@ public class DateTime {
         return time;
     }
 
+    /**
+     *
+     * @param aptTime
+     * @return
+     */
     public static boolean isToday(LocalDate aptTime) {
         // aptTime has already been converted to localized date with zoneId of user
         if (aptTime.getYear() == LocalDate.now(DateTime.getZoneId()).getYear()) {

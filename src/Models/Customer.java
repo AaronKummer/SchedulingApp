@@ -21,6 +21,19 @@ public class Customer {
     private String lastUpdateBy;
     private int divisionID;
 
+    /**
+     *
+     * @param customerID
+     * @param customerName
+     * @param active
+     * @param address
+     * @param city
+     * @param postalCode
+     * @param phone
+     * @param country
+     * @param lastUpdate
+     * @param lastUpdateBy
+     */
     public Customer(int customerID, String customerName, int active, String address, String city, String postalCode, String phone, String country, Date lastUpdate, String lastUpdateBy) {
         setCustomerID(customerID);
         setCustomerName(customerName);
@@ -34,6 +47,15 @@ public class Customer {
         setCustomerLastUpdateBy(lastUpdateBy);
     }
 
+    /**
+     *
+     * @param customerName
+     * @param customerID
+     * @param address
+     * @param postalCode
+     * @param phone
+     * @param divisionID
+     */
     public Customer(String customerName, int customerID, String address, String postalCode, String phone, int divisionID) {
         setCustomerID(customerID);
         setCustomerName(customerName);
@@ -43,6 +65,11 @@ public class Customer {
         setCustomerDivisionID(divisionID);
     }
 
+    /**
+     *
+     * @param customerName
+     * @param customerID
+     */
     public Customer(String customerName, int customerID) {
         setCustomerID(customerID);
         setCustomerName(customerName);
@@ -52,6 +79,10 @@ public class Customer {
 
     }
 
+    /**
+     *
+     * @param selectedCustomerID
+     */
     public static void deleteCustomer(Integer selectedCustomerID) {
         Appointment.deleteAppointmentsForCustomerID(selectedCustomerID);
         try {
@@ -135,6 +166,11 @@ public class Customer {
         this.lastUpdateBy = lastUpdateBy;
     }
 
+    /**
+     *
+     * @param id
+     * @return
+     */
     public static String getCustomerNameById(int id) {
         var customerName = "";
         ResultSet result;
@@ -154,6 +190,10 @@ public class Customer {
         return customerName;
     }
 
+    /**
+     *
+     * @return
+     */
     public static List<Customer> getAllCustomersLite() {
         List<Customer> customers = new ArrayList<>();
         ResultSet result;
@@ -173,6 +213,11 @@ public class Customer {
         return customers;
     }
 
+    /**
+     *
+     * @param divisionID
+     * @return
+     */
     public String getFormattedDivisionName(int divisionID) {
         ResultSet result;
         String divisionName = "";
@@ -195,7 +240,10 @@ public class Customer {
         return countryName + " - " + divisionName;
     }
 
-    // gets all, fully hydrated customers
+    /**
+     *
+     * @return
+     */
     public static List<Customer> getAllCustomers() {
         List<Customer> customers = new ArrayList<>();
         ResultSet result;
@@ -221,7 +269,10 @@ public class Customer {
         return customers;
     }
 
-    // gets customers, divisions and countries for report
+    /**
+     *
+     * @return
+     */
     public static List<CountryReportPoco> getAllCustomersWithCountryName() {
         List<CountryReportPoco> countryReportPocos = new ArrayList<>();
         ResultSet result;
@@ -246,6 +297,15 @@ public class Customer {
         return countryReportPocos;
     }
 
+    /**
+     *
+     * @param customerId
+     * @param customerName
+     * @param divisionID
+     * @param address
+     * @param postalCode
+     * @param phone
+     */
     public static void updateCustomer(Integer customerId, String customerName, int divisionID, String address, String postalCode, String phone) {
         PreparedStatement statement;
 
@@ -274,6 +334,15 @@ public class Customer {
 
     }
 
+    /**
+     *
+     * @param customerId
+     * @param customerName
+     * @param divisionID
+     * @param address
+     * @param postalCode
+     * @param phone
+     */
     public static void createCustomer(Integer customerId, String customerName, int divisionID, String address, String postalCode, String phone) {
         try {
             var now = new Date(Calendar.getInstance().getTime().getTime());
