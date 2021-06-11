@@ -6,8 +6,11 @@ import Models.Customer;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import Models.User;
 import Utilities.DateTime;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,7 +36,7 @@ import javafx.stage.Stage;
 public class AppointmentAddController implements Initializable {
 
     @FXML
-    private Label AppointmentLabel;
+    private Label AppointmentUserLabel;
     @FXML
     private Label AppointmentCustomerLabel;
     @FXML
@@ -45,27 +48,30 @@ public class AppointmentAddController implements Initializable {
     @FXML
     private Label AppointmentTypeLabel;
     @FXML
+    private Label AppointmentLocationLabel;
+    @FXML
     private Label AppointmentDateLabel;
     @FXML
-    private Label AppointmentLocationLabel;
+    private Label AppointmentStartTimeLabel;
+    @FXML
+    private Label AppointmentEndTimeLabel;
+
+    @FXML
+    private ComboBox<String> AppointmentUserComboBox;
+    @FXML
+    private ComboBox<String> AppointmentCustomerComboBox;
     @FXML
     private TextField AppointmentTitleTextField;
     @FXML
     private TextField AppointmentDescriptionTextField;
     @FXML
+    private ComboBox<String> AppointmentContactComboBox;
+    @FXML
     private DatePicker AppointmentDatePicker;
     @FXML
-    private Label AppointmentStartTimeLabel;
-    @FXML
-    private Label AppointmentUrlLabel;
-    @FXML
-    private TextField AppointmentUrlTextField;
-    @FXML
-    private Label AppointmentEndTimeLabel;
-    @FXML
     private TextField AppointmentTypeTextField;
-    @FXML
-    private ComboBox<String> AppointmentContactComboBox;
+
+
     @FXML
     private ComboBox<String> AppointmentLocationComboBox;
     @FXML
@@ -80,8 +86,7 @@ public class AppointmentAddController implements Initializable {
     private TableColumn<Customer, Integer> AppointmentCustomerTableCustomerIDColumn;
     @FXML
     private TableColumn<Customer, String> AppointmentCustomerTableCustomerNameColumn;
-    @FXML
-    private ComboBox<String> AppointmentCustomerComboBox;
+
     @FXML
     private Label AddUpdateLabel;
 
@@ -89,6 +94,7 @@ public class AppointmentAddController implements Initializable {
 
     private List<Contact> contacts;
 
+    private List<User> users;
 
     @FXML
     private Button AppointmentBackButton;
@@ -98,13 +104,12 @@ public class AppointmentAddController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle bundle) {
-
-        SetContactOptions();
-        SetLocationOptions();
-        SetCustomerOptions();
+        setUserOptions();
+        setContactOptions();
+        setLocationOptions();
+        setCustomerOptions();
         // Updating existing appointment
         if (AppointmentsMainController.selectedAppointment != null) {
-            System.out.println(AppointmentsMainController.selectedAppointment.getContactName());
             AppointmentTitleTextField.setText(AppointmentsMainController.selectedAppointment.getTitle());
             AppointmentDescriptionTextField.setText(AppointmentsMainController.selectedAppointment.getDescription());
             AppointmentTypeTextField.setText(AppointmentsMainController.selectedAppointment.getType());
@@ -113,24 +118,47 @@ public class AppointmentAddController implements Initializable {
             AppointmentCustomerComboBox.getSelectionModel().select(customerName);
             AppointmentLocationComboBox.getSelectionModel().select(AppointmentsMainController.selectedAppointment.getLocation());
             AppointmentContactComboBox.getSelectionModel().select(AppointmentsMainController.selectedAppointment.getContactName());
+
+            /**
+             * This Lambda expression is used to find users name by ID in a list of users
+             * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+             */
+            var selectedUser = this.users.stream()
+                    .filter(c -> AppointmentsMainController.selectedAppointment.getUserID().equals(c.getNonStaticUserID()))
+                    .findAny().orElse(null);
+            var userName = selectedUser.getUserName();
+
+            AppointmentUserComboBox.getSelectionModel().select(userName);
             AppointmentDatePicker.setValue(LocalDate.parse(AppointmentsMainController.selectedAppointment.getDate()));
             AppointmentStartTextField.setText(AppointmentsMainController.selectedAppointment.getStartTime());
             AppointmentEndTextField.setText(AppointmentsMainController.selectedAppointment.getEndTime());
         } else {
             // Creating new appointment
             AddUpdateLabel.setText("Add Appointment");
-            SetLocationOptions();
-            SetCustomerOptions();
+            setContactOptions();
+            setLocationOptions();
+            setCustomerOptions();
+            setUserOptions();
         }
+    }
 
 
-
+    /**
+     * set contact options
+     */
+    private  void setUserOptions() {
+        this.users = User.getAllUsers();
+        ObservableList<String> usersList = FXCollections.observableArrayList();
+        for (User user: this.users) {
+            usersList.add(user.getUserName());
+        }
+        AppointmentUserComboBox.setItems(usersList);
     }
 
     /**
      * set contact options
      */
-    private  void SetContactOptions() {
+    private  void setContactOptions() {
         this.contacts = Contact.getAllContacts();
         ObservableList<String> contactsList = FXCollections.observableArrayList();
         for (Contact contact: this.contacts) {
@@ -142,7 +170,7 @@ public class AppointmentAddController implements Initializable {
     /**
      * set customer options
      */
-    private  void SetCustomerOptions() {
+    private  void setCustomerOptions() {
         this.customers = Customer.getAllCustomersLite();
         ObservableList<String> customersList = FXCollections.observableArrayList();
         for (Customer customer: this.customers) {
@@ -154,7 +182,7 @@ public class AppointmentAddController implements Initializable {
     /**
      * set location options for combo box
      */
-    private void SetLocationOptions() {
+    private void setLocationOptions() {
         ObservableList<String> locationList = FXCollections.observableArrayList();
         locationList.addAll("Phoenix", "Arizona", "White Plains", "New York", "Montreal", "Canada", "London");
         AppointmentLocationComboBox.setItems(locationList);
@@ -178,28 +206,64 @@ public class AppointmentAddController implements Initializable {
                     var type = AppointmentTypeTextField.getText();
                     var title = AppointmentTitleTextField.getText();
 
+                    /**
+                     * This Lambda expression is used to find a selected contact in a list.
+                     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+                     */
                     var selectedContact = this.contacts.stream()
                             .filter(c -> AppointmentContactComboBox.getValue().equals(c.getName()))
                             .findAny().orElse(null);
                     var contactID = selectedContact.getId();
 
+                    /**
+                     * This Lambda expression is used to find a selected contact in a list.
+                     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+                     */
                     var selectedCustomer = this.customers.stream()
                             .filter(c -> AppointmentCustomerComboBox.getValue().equals(c.getCustomerName()))
                             .findAny().orElse(null);
                     var customerID = selectedCustomer.getCustomerID();
-                    Appointment.createAppointment(type,title,description,location,contactID,customerID,startTime,endTime);
+
+                    /**
+                     * This Lambda expression is used to find a selected contact in a list.
+                     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+                     */
+                    var selectedUser = this.users.stream()
+                            .filter(c -> AppointmentUserComboBox.getValue().equals(c.getUserName()))
+                            .findAny().orElse(null);
+
+                    var userId = selectedUser.getNonStaticUserID();
+
+                    Appointment.createAppointment(type,title,description,location,contactID,customerID,startTime,endTime, userId);
                 }
                 else {
-
+                    /**
+                     * This Lambda expression is used to find a selected contact in a list.
+                     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+                     */
                     var selectedContact = this.contacts.stream()
                             .filter(c -> AppointmentContactComboBox.getValue().equals(c.getName()))
                             .findAny().orElse(null);
                     var contactID = selectedContact.getId();
 
+                    /**
+                     * This Lambda expression is used to find a selected contact in a list.
+                     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+                     */
                     var selectedCustomer = this.customers.stream()
                             .filter(c -> AppointmentCustomerComboBox.getValue().equals(c.getCustomerName()))
                             .findAny().orElse(null);
                     var customerID = selectedCustomer.getCustomerID();
+
+                    /**
+                     * This Lambda expression is used to find a selected contact in a list.
+                     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+                     */
+                    var selectedUser = this.users.stream()
+                            .filter(c -> AppointmentUserComboBox.getValue().equals(c.getUserName()))
+                            .findAny().orElse(null);
+
+                    var userId = selectedUser.getNonStaticUserID();
 
                     try {
                         var location = AppointmentLocationComboBox.getValue();
@@ -220,7 +284,8 @@ public class AppointmentAddController implements Initializable {
                                         contactID,
                                         customerID,
                                         startTime,
-                                        endTime
+                                        endTime,
+                                        userId
                                 );
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());

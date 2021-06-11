@@ -9,8 +9,16 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import javafx.beans.value.ObservableListValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -93,6 +101,9 @@ public class CustomerController implements Initializable {
     @FXML
     private ComboBox<String> CustomerDivisionComboBox;
     @FXML
+    private ComboBox<String> CustomerDivisionCountryFilterComboBox;
+
+    @FXML
     private RadioButton CustomerActiveRadioButton;
     @FXML
     private RadioButton CustomerInactiveRadioButton;
@@ -102,19 +113,24 @@ public class CustomerController implements Initializable {
     private Button Back;
     private Integer selectedCustomerID;
     private List<Division> divisions;
+    private List<Country> countries;
 
     /**
-     * Initializes Customers page
+     *
+     * @param url
+     * @param rb
      */
-    @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.setupController();
     }
 
     /**
-     * initialize data
+     *
      */
     public void setupController() {
+        CustomerDivisionComboBox.setValue("");
+        CustomerDivisionCountryFilterComboBox.setValue("");
+        setupDivisionCountryFilter();
         this.selectedCustomerID = null;
         this.clearFields();
         this.divisions = Division.getAllDivisions();
@@ -125,7 +141,6 @@ public class CustomerController implements Initializable {
         CustomerID.setCellValueFactory(customerIDFactory);
         CustomerName.setCellValueFactory(customerNameFactory);
         CustomerPhone.setCellValueFactory(customerPhoneFactory);
-
         CustomersTable.setItems(FXCollections.observableArrayList(Customer.getAllCustomers()));
 
         ObservableList<String> divisionsList = FXCollections.observableArrayList();
@@ -145,6 +160,45 @@ public class CustomerController implements Initializable {
     }
 
     /**
+     *
+     * @param event
+     */
+    @FXML
+    private void divisionCountryFilterAction(ActionEvent event) {
+        var countryName = CustomerDivisionCountryFilterComboBox.getValue();
+        if (!countryName.isEmpty()) {
+            var selectedCountryIDs = this.countries.stream()
+                    .filter(c -> c.getCountry().equals(countryName)).map(Country::getCountryID).collect(Collectors.toList());
+
+
+            var divisionsWithCountryName = this.divisions.stream()
+                    .filter(d -> selectedCountryIDs.get(0).equals(d.getCountryID()))
+                    .map(Division::getDivisionName).collect(Collectors.toList());
+            CustomerDivisionComboBox.setItems(FXCollections.observableList(divisionsWithCountryName));
+        }
+    }
+
+    /**
+     *
+     * @param keyExtractor
+     * @param <T>
+     * @return
+     */
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
+    }
+
+    /**
+     *
+     */
+    public void setupDivisionCountryFilter() {
+        this.countries = Country.getAllCountries();
+        var uniqueCountryNames = this.countries.stream().filter(distinctByKey(Country::getCountry)).map(Country::getCountry).collect(Collectors.toList());
+        CustomerDivisionCountryFilterComboBox.setItems(FXCollections.observableList(uniqueCountryNames));
+    }
+
+    /**
      * listener for click on customer row
      */
     public void customerListener(Customer customer) throws SQLException, Exception {
@@ -154,40 +208,27 @@ public class CustomerController implements Initializable {
         CustomerAddressTextField.setText(customer.getCustomerAddress());
         CustomerPostalCodeTextField.setText(customer.getCustomerPostalCode());
         CustomerPhoneTextField.setText(customer.getCustomerPhone());
-
+        /**
+         * This Lambda expression is used to find a selected division in a list.
+         * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
+         */
         var selectedDivision = this.divisions.stream()
                 .filter(d -> d.getDivisionID() == customer.getDivisionID()).findAny().orElse(null);
         CustomerDivisionComboBox.getSelectionModel().select(selectedDivision.getDivisionName());
 
-    }
-
-    public void updateCustomerTable() throws SQLException {
-
-    }
-
-    @FXML
-    private void Save(ActionEvent event) throws Exception {
-        /*System.out.println("CustomerAdd: " + customerAdd);
-        System.out.println("CustomerUpdate: " + customerUpdate);
-        if (CustomerCustomerNameTextField.getText() != null && customerAdd || customerUpdate) {
-            if (validCustomer()) {
-                if (customerAdd) {
-                    saveCustomer();
-                    clearTextFields();
-                    updateCustomerTable();
-                } else if (customerUpdate) {
-                    updateCustomer();
-                    clearTextFields();
-                    updateCustomerTable();
-                }
-            }
-        } else {
-            System.out.println("No customer selected to save!");
-        }*/
+        /**
+         * lambda
+         */
+        var country = this.countries.stream().filter(c -> c.getCountryID() == selectedDivision.getCountryID()).map(Country::getCountry).collect(Collectors.toList());
+        CustomerDivisionCountryFilterComboBox.setValue(country.get(0));
 
     }
 
-
+    /**
+     *
+     * @param customer
+     * @throws Exception
+     */
     private void deleteCustomer(Customer customer) throws Exception {
         this.selectedCustomerID = null;
         System.out.println("***** Begin Delete Customer *****");
@@ -199,11 +240,12 @@ public class CustomerController implements Initializable {
         } catch (SQLException e) {
             System.out.println("Delete Customer SQL statement contains an error!");
         }
-
-        updateCustomerTable();
         System.out.println("***** End Delete Customer *****");
     }
-    
+
+    /**
+     *
+     */
     //allows inputs to add/update customer
     public void enableCustomerFields(){
         CustomerActiveRadioButton.setDisable(false);
@@ -221,6 +263,9 @@ public class CustomerController implements Initializable {
 
     }
 
+    /**
+     *
+     */
     private void clearFields() {
         CustomerCustomerNameTextField.setText("");
         CustomerAddressTextField.setText("");
@@ -228,7 +273,11 @@ public class CustomerController implements Initializable {
         CustomerPhoneTextField.setText("");
     }
 
-
+    /**
+     *
+     * @param event
+     * @throws SQLException
+     */
     @FXML
     private void AddButtonHandler(ActionEvent event) throws SQLException {
         this.selectedCustomerID = null;
@@ -236,6 +285,10 @@ public class CustomerController implements Initializable {
         CustomerLabel.setText("Create a new customer");
     }
 
+    /**
+     *
+     * @param event
+     */
     @FXML
     private void DeleteButtonHandler(ActionEvent event) {
         Customer.deleteCustomer(this.selectedCustomerID);
@@ -247,6 +300,11 @@ public class CustomerController implements Initializable {
         this.setupController();
     }
 
+    /**
+     *
+     * @param event
+     * @throws IOException
+     */
     @FXML
     private void BackButtonHandler(ActionEvent event) throws IOException {
         var root = FXMLLoader.load(getClass().getResource("../Views/Main.fxml"));
@@ -257,6 +315,10 @@ public class CustomerController implements Initializable {
         stage.show();
     }
 
+    /**
+     *
+     * @param actionEvent
+     */
     public void SaveButtonHandler(ActionEvent actionEvent) {
         var validInput = false;
 

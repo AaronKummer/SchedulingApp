@@ -44,4 +44,12 @@ public class Division {
         }
         return contacts;
     }
+
+    public int getCountryID() {
+        return countryID;
+    }
+
+    public void setCountryID(int countryID) {
+        this.countryID = countryID;
+    }
 }

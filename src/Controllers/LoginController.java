@@ -87,7 +87,7 @@ public class LoginController implements Initializable {
         Stage stage;
         var userId = CheckPassword(usernameInput, passwordInput);
         if (userId != null) {
-
+            this.logLoginSuccess(usernameInput);
             this.checkAppointments(userId);
             root = FXMLLoader.load(getClass().getResource("../Views/Main.fxml"));
             stage = (Stage) LoginButton.getScene().getWindow();
@@ -95,12 +95,19 @@ public class LoginController implements Initializable {
             stage.setScene(scene);
             stage.show();
         } else {
+            this.logLoginAttempt(usernameInput);
+            Alert noMatch = new  Alert(Alert.AlertType.ERROR);
+            if(Locale.getDefault().getLanguage().equals("en")){
+                noMatch.setContentText("The username and password doesn't match.");
+            }
+            if(Locale.getDefault().getLanguage().equals("es")){
+                noMatch.setContentText("El nombre de usuario y la contraseña no coinciden.");
+            }
             this.userID = null;
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("");
-            alert.setHeaderText("Invalid Credentials");
-            alert.setContentText("User not found, or incorrect password.");
-            Optional<ButtonType> result = alert.showAndWait();
+            noMatch.setTitle("");
+            noMatch.setHeaderText("Invalid Credentials");
+            noMatch.setContentText("User not found, or incorrect password.");
+            Optional<ButtonType> result = noMatch.showAndWait();
         }
     }
 
@@ -109,15 +116,16 @@ public class LoginController implements Initializable {
      */
     private void checkAppointments(Integer userId) {
         var appointmentsForUser = Appointment.getAppointmentsForUser(userId);
+        var noUrgerntAppointments = true;
         for (Appointment apt : appointmentsForUser) {
             // check if same date as today
             var aptDate = apt.getDateAsLocalDate();
-
             if (DateTime.isToday(aptDate)) {
                 var localTime = apt.getStartTimeASLocalTime();
                 long minutes = ChronoUnit.MINUTES.between(LocalTime.now(DateTime.getZoneId()), localTime);
                 // check for appointments within 15 minutes from now
                 if (minutes <= 15 && minutes > 0) {
+                    noUrgerntAppointments = false;
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("");
                     alert.setHeaderText("Appointment Reminder");
@@ -127,16 +135,36 @@ public class LoginController implements Initializable {
                 }
             }
         }
-
-
+        if (noUrgerntAppointments) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("");
+            alert.setHeaderText("No urgent appointments");
+            alert.setContentText("You don't have any appointments within then next fifteen minutes.");
+            Optional<ButtonType> result = alert.showAndWait();
+        }
     }
 
     /**
-     * logs login attempt
+     * logs login success
+     */
+    public void logLoginSuccess(String user) {
+        try {
+            String fileName = "loginLogs.txt";
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
+            writer.append(DateTime.getNowTimeStamp() + " " + user + " " + "\n");
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
+
+    /**
+     * logs login success
      */
     public void logLoginAttempt(String user) {
         try {
-            String fileName = "loginLogs.txt";
+            String fileName = "login_activity.txt";
             BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
             writer.append(DateTime.getNowTimeStamp() + " " + user + " " + "\n");
             writer.flush();
@@ -151,7 +179,7 @@ public class LoginController implements Initializable {
      */
     private Integer CheckPassword(String username, String password) throws SQLException {
         ResultSet result;
-        this.logLoginAttempt(username);
+
         try {
             Statement statement = ConnectDB.makeConnection().createStatement();
             String sqlStatement = "SELECT Password, User_ID FROM users WHERE User_Name ='" + username + "'";

@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import Utilities.DateTime;
@@ -20,11 +21,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
@@ -65,7 +62,6 @@ public class AppointmentsMainController implements Initializable {
     private RadioButton AppointmentAllRadioButton;
     @FXML
     private Button Back;
-
     private ToggleGroup RadioButtonToggleGroup;
     private boolean isWeekly;
     private boolean isMonthly;
@@ -185,6 +181,12 @@ public class AppointmentsMainController implements Initializable {
         } catch (SQLException e) {
 
         }
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("");
+        alert.setHeaderText("Appointment deleted");
+        alert.setContentText("You have deleted appointment ID " + this.selectedAppointment.getAppointmentID() + "of type" + this.selectedAppointment.getType());
+        Optional<ButtonType> result = alert.showAndWait();
 
         this.selectedAppointment = null;
         this.GetAppointments();

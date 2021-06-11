@@ -42,13 +42,15 @@
                    <Label fx:id="CustomerAddressLabel" text="Address" GridPane.rowIndex="2" />
                    <Label fx:id="CustomerPostalCodeLabel" text="Zip Code" GridPane.rowIndex="3" />
                    <Label fx:id="CustomerPhoneLabel" text="Phone" GridPane.rowIndex="4" />
-                   <Label fx:id="CustomerDivisionIDLabel" text="Division " GridPane.rowIndex="5" />
+                   <Label fx:id="CustomerDivisionCountryFilterLabel" text="Division Country" GridPane.rowIndex="5" />
+                   <Label fx:id="CustomerDivisionIDLabel" text="Division " GridPane.rowIndex="6" />
 
                    <TextField fx:id="CustomerCustomerNameTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                    <TextField fx:id="CustomerAddressTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                    <TextField fx:id="CustomerPostalCodeTextField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                    <TextField fx:id="CustomerPhoneTextField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                   <ComboBox fx:id="CustomerDivisionComboBox" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                   <ComboBox fx:id="CustomerDivisionCountryFilterComboBox" onAction="#divisionCountryFilterAction" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                   <ComboBox fx:id="CustomerDivisionComboBox" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
 
                </children>
             </GridPane>
