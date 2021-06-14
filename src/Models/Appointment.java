@@ -2,16 +2,13 @@ package Models;
 
 import Controllers.LoginController;
 import Utilities.ConnectDB;
-import Utilities.DateTime;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.sql.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import static Utilities.DateTime.commonDateFormat;
 
@@ -232,22 +229,27 @@ public class Appointment {
             ResultSet result = statement.executeQuery();
 
             while (result.next()) {
-
                 var appointmentID = result.getInt("Appointment_ID");
                 var title = result.getString("Title");
                 var description = result.getString("Description");
                 var location = result.getString("Location");
                 var contact = result.getString("Contact_Name");
                 var type = result.getString("Type");
-                var startUTC = result.getTimestamp("Start");
-                var endUTC = result.getTimestamp("End");
+                var start = result.getTimestamp("Start");
+                var end = result.getTimestamp("End");
                 var customerID = result.getInt("Customer_ID");
                 var userID = result.getInt("User_ID");
 
+                ZoneId newzid = ZoneId.systemDefault();
 
-                var start =  startUTC.toInstant().atZone(DateTime.getZoneId()).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a"));
-                var end =  endUTC.toInstant().atZone(DateTime.getZoneId()).toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a"));
-                appointmentsList.add(new Appointment(appointmentID, title, description, location, contact, type, start, end, customerID, userID));
+                ZonedDateTime newzdtStart = start.toLocalDateTime().atZone(ZoneId.of("UTC"));
+                var newLocalStart = newzdtStart.withZoneSameInstant(newzid).toLocalDateTime()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a"));
+                ZonedDateTime newzdtEnd = end.toLocalDateTime().atZone(ZoneId.of("UTC"));
+                var newLocalEnd = newzdtEnd.withZoneSameInstant(newzid).toLocalDateTime()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a"));
+
+                appointmentsList.add(new Appointment(appointmentID, title, description, location, contact, type, newLocalStart, newLocalEnd, customerID, userID));
             }
 
         } catch (SQLException throwables) {
@@ -277,6 +279,17 @@ public class Appointment {
     public static void updateAppointment(int id, String type, String title, String desc, String loc, int contactID, int customerID, LocalDateTime start, LocalDateTime end, int userID) {
         PreparedStatement statement;
 
+        ZoneId zid = ZoneId.systemDefault();
+        ZonedDateTime zdtStart = start.atZone(zid);
+        ZonedDateTime utcStart = zdtStart.withZoneSameInstant(ZoneId.of("UTC"));
+        var ldtStart = utcStart.toLocalDateTime();
+        Timestamp startsqlts = Timestamp.valueOf(ldtStart); //this value can be inserted into database
+
+        ZonedDateTime zdtEnd = end.atZone(zid);
+        ZonedDateTime utcEnd = zdtEnd.withZoneSameInstant(ZoneId.of("UTC"));
+        var ldtEnd = utcEnd.toLocalDateTime();
+        Timestamp endsqlts = Timestamp.valueOf(ldtEnd); //this value can be inserted into database
+
         try {
             statement = ConnectDB.makeConnection().prepareStatement(
                     "UPDATE appointments" +
@@ -286,9 +299,9 @@ public class Appointment {
                         ", Location = '" + loc +"'" +
                         ", Customer_ID = '" + customerID +"'" +
                         ", Contact_ID = '" + contactID +"'" +
-                        ", Start = '" + start +"'" +
-                        ", End = '" + end +"'" +
-                        ", Last_Update = '" + LocalDateTime.now(DateTime.getZoneId()) +"'" +
+                        ", Start = '" + startsqlts  +"'" +
+                        ", End = '" + endsqlts +"'" +
+                        ", Last_Update = '" + LocalDateTime.now(ZoneId.of("UTC")) +"'" +
                         ", Last_Updated_By = '" + LoginController.userID +"'" +
                         ", User_ID = '" + userID +"'" +
                         " WHERE Appointment_ID = " + id
@@ -318,8 +331,16 @@ public class Appointment {
      */
     public static void createAppointment(String type, String title, String desc, String loc, int contactID, int customerID, LocalDateTime start, LocalDateTime end, int userID) {
         try {
-            var startStamp = DateTime.getTimeStampForLocalDate(start);
-            var endStamp = DateTime.getTimeStampForLocalDate(end);
+            ZoneId zid = ZoneId.systemDefault();
+            ZonedDateTime zdtStart = start.atZone(zid);
+            ZonedDateTime utcStart = zdtStart.withZoneSameInstant(ZoneId.of("UTC"));
+            var ldtStart = utcStart.toLocalDateTime();
+            Timestamp startsqlts = Timestamp.valueOf(ldtStart); //this value can be inserted into database
+
+            ZonedDateTime zdtEnd = end.atZone(zid);
+            ZonedDateTime utcEnd = zdtEnd.withZoneSameInstant(ZoneId.of("UTC"));
+            var ldtEnd = utcEnd.toLocalDateTime();
+            Timestamp endsqlts = Timestamp.valueOf(ldtEnd); //this value can be inserted into database
 
             PreparedStatement statement = ConnectDB.makeConnection()
                     .prepareStatement("INSERT INTO appointments (Title, Description, Location, Type, Start, End, Create_Date, Created_By, Customer_ID, User_ID, Contact_ID) "
@@ -328,9 +349,9 @@ public class Appointment {
             statement.setString(2, desc);
             statement.setString(3, loc);
             statement.setString(4, type);
-            statement.setTimestamp(5, startStamp);
-            statement.setTimestamp(6, endStamp);
-            statement.setTimestamp(7, DateTime.getNowTimeStamp());
+            statement.setTimestamp(5,startsqlts);
+            statement.setTimestamp(6,endsqlts);
+            statement.setTimestamp(7,Timestamp.valueOf(LocalDateTime.now(ZoneId.of("UTC"))));
             statement.setInt(8, LoginController.userID);
             statement.setInt(9, customerID);
             statement.setInt(10, userID);
@@ -394,7 +415,7 @@ public class Appointment {
      * @return
      */
     public LocalTime getStartTimeASLocalTime() {
-        return LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(DateTime.getZoneId()).toLocalTime();
+        return LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(ZoneId.systemDefault()).toLocalTime();
     }
 
     /**
@@ -402,7 +423,7 @@ public class Appointment {
      * @return
      */
     public LocalTime getEndTimeASLocalTime() {
-        return LocalDateTime.parse(this.getEnd(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(DateTime.getZoneId()).toLocalTime();
+        return LocalDateTime.parse(this.getEnd(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(ZoneId.systemDefault()).toLocalTime();
     }
 
     /**
@@ -410,9 +431,7 @@ public class Appointment {
      * @return
      */
     public LocalDateTime getStartTimeASLocalDateTime() {
-        System.out.println(this.getStart());
-        //2021-06-14 9:30 AM
-        var date = LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a")).atZone(DateTime.getZoneId()).toLocalDateTime();
+        var date = LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a")).atZone(ZoneId.systemDefault()).toLocalDateTime();
         return date;
     }
 
@@ -421,7 +440,7 @@ public class Appointment {
      * @return
      */
     public LocalDateTime getEndTimeASLocalDateTime() {
-        var date = LocalDateTime.parse(this.getEnd(), DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm a")).atZone(DateTime.getZoneId()).toLocalDateTime();
+        var date = LocalDateTime.parse(this.getEnd(), DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a")).atZone(ZoneId.systemDefault()).toLocalDateTime();
         return date;
     }
 
@@ -455,7 +474,7 @@ public class Appointment {
      */
     public LocalDate getDateAsLocalDate() {
         var localDate = LocalDate.parse(this.getDate(), commonDateFormat);
-        return localDate.atStartOfDay(DateTime.getZoneId()).toLocalDate();
+        return localDate.atStartOfDay(ZoneId.systemDefault()).toLocalDate();
     }
 
     /**
@@ -472,5 +491,13 @@ public class Appointment {
      */
     public void setUserID(Integer userID) {
         this.userID = userID;
+    }
+
+    public String getFormattedStartTime() {
+        return this.getStartTimeASLocalTime().format(DateTimeFormatter.ofPattern("h:m a"));
+    }
+
+    public String getFormattedEndTime() {
+        return this.getEndTimeASLocalDateTime().format(DateTimeFormatter.ofPattern("h:m a"));
     }
 }

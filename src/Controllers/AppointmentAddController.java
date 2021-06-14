@@ -5,11 +5,9 @@ import Models.Contact;
 import Models.Customer;
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import Models.User;
 import Utilities.DateTime;
@@ -96,6 +94,8 @@ public class AppointmentAddController implements Initializable {
 
     /**
      * initialize controller
+     * This Lambda expression is used to find users name by ID in a list of users
+     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
      */
     @Override
     public void initialize(URL url, ResourceBundle bundle) {
@@ -105,19 +105,18 @@ public class AppointmentAddController implements Initializable {
         setCustomerOptions();
         // Updating existing appointment
         if (AppointmentsMainController.selectedAppointment != null) {
+
             AppointmentTitleTextField.setText(AppointmentsMainController.selectedAppointment.getTitle());
             AppointmentDescriptionTextField.setText(AppointmentsMainController.selectedAppointment.getDescription());
             AppointmentTypeTextField.setText(AppointmentsMainController.selectedAppointment.getType());
             AddUpdateLabel.setText("Update Appointment");
+
             var customerName = Customer.getCustomerNameById(AppointmentsMainController.selectedAppointment.getCustomerID());
+
             AppointmentCustomerComboBox.getSelectionModel().select(customerName);
             AppointmentLocationComboBox.getSelectionModel().select(AppointmentsMainController.selectedAppointment.getLocation());
             AppointmentContactComboBox.getSelectionModel().select(AppointmentsMainController.selectedAppointment.getContactName());
 
-            /**
-             * This Lambda expression is used to find users name by ID in a list of users
-             * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
-             */
             var selectedUser = this.users.stream()
                     .filter(c -> AppointmentsMainController.selectedAppointment.getUserID().equals(c.getNonStaticUserID()))
                     .findAny().orElse(null);
@@ -125,8 +124,9 @@ public class AppointmentAddController implements Initializable {
 
             AppointmentUserComboBox.getSelectionModel().select(userName);
             AppointmentDatePicker.setValue(LocalDate.parse(AppointmentsMainController.selectedAppointment.getDate()));
-            AppointmentStartTextField.setText(AppointmentsMainController.selectedAppointment.getStartTime());
-            AppointmentEndTextField.setText(AppointmentsMainController.selectedAppointment.getEndTime());
+            AppointmentStartTextField.setText(AppointmentsMainController.selectedAppointment.getStartTimeASLocalDateTime().toLocalTime().format(DateTimeFormatter.ofPattern("h:mm a")));
+            AppointmentEndTextField.setText(AppointmentsMainController.selectedAppointment.getEndTimeASLocalDateTime().toLocalTime().format(DateTimeFormatter.ofPattern("h:mm a")));
+
         } else {
             // Creating new appointment
             AddUpdateLabel.setText("Add Appointment");
@@ -193,21 +193,26 @@ public class AppointmentAddController implements Initializable {
         Boolean returnValue = false;
         ObservableList<Appointment> appointments = Appointment.getAppointmentList();
 
-        for(Appointment a : appointments){
+        for(Appointment a : appointments) {
             LocalDateTime startTime = a.getStartTimeASLocalDateTime();
             LocalDateTime endEnd = a.getEndTimeASLocalDateTime();
-
-            if(start.isAfter(startTime) && start.isBefore(endEnd) || end.isAfter(startTime) && end.isBefore(endEnd)){
-                returnValue = true;
+            if (AppointmentsMainController.selectedAppointment != null) {
+                if (AppointmentsMainController.selectedAppointment.getAppointmentID() == a.getAppointmentID()) {
+                    return false;
+                } else
+                if(start.isAfter(startTime) && start.isBefore(endEnd) || end.isAfter(startTime) && end.isBefore(endEnd)) {
+                    returnValue = true;
+                }
             }
         }
-
         return returnValue;
     }
 
     /**
      * Saves appointment
      * discussion of lambda
+     * * This Lambda expression is used to find a selected contact in a list.
+     * this will hopefully improve readability of the code and demonstrate the student's understanding of how to implement a lambda expression.
      */
     @FXML
     private void Save() throws Exception {
@@ -215,6 +220,14 @@ public class AppointmentAddController implements Initializable {
         LocalDate date = AppointmentDatePicker.getValue();
         var startTime = DateTime.parseTimeTextField(AppointmentStartTextField.getText(), date);
         var endTime = DateTime.parseTimeTextField(AppointmentEndTextField.getText(), date);
+
+        if (!this.appointmentIsWithinBusinessHours(startTime, endTime, date)) {
+            Alert noMatch = new  Alert(Alert.AlertType.ERROR);
+            noMatch.setTitle("Invalid date");
+            noMatch.setHeaderText("Please select a date and time within business hours");
+            Optional<ButtonType> result = noMatch.showAndWait();
+            return;
+        }
 
         if(this.appointmentExists(startTime, endTime)){
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -324,6 +337,35 @@ public class AppointmentAddController implements Initializable {
             }
         }
         this.Back();
+    }
+
+    private boolean appointmentIsWithinBusinessHours(LocalDateTime startTime, LocalDateTime endTime, LocalDate date) {
+        try {
+            var isOutsideOfBusinessHours = false;
+            if (startTime.toLocalTime().isBefore(LocalTime.parse("08:30:00")) ||
+                    startTime.toLocalTime().isAfter(LocalTime.parse("22:00:00")) ||
+                    endTime.toLocalTime().isBefore(LocalTime.parse("08:30:00"))  ||
+                    endTime.toLocalTime().isAfter(LocalTime.parse("22:00:00"))) {
+                    isOutsideOfBusinessHours = true;
+            }
+            var isWeekend = false;
+            if (EnumSet.of( DayOfWeek.SATURDAY , DayOfWeek.SUNDAY ).contains(date.getDayOfWeek())) {
+                isWeekend = true;
+            }
+            if (isOutsideOfBusinessHours || isWeekend) {
+                return false;
+            }
+        } catch (Exception e) {
+            Alert noMatch = new  Alert(Alert.AlertType.ERROR);
+            noMatch.setTitle("Invalid date or time");
+            noMatch.setHeaderText("Please select a date and time within business hours");
+            noMatch.setHeaderText("Enter times as 8:30 am, 4:30pm etc");
+            Optional<ButtonType> result = noMatch.showAndWait();
+            return false;
+        }
+
+
+        return true;
     }
 
     /**

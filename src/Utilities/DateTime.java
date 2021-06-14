@@ -22,7 +22,6 @@ public class DateTime {
     }
 
     /**
-     *
      * @param date1
      * @param date2
      * @return
@@ -107,7 +106,7 @@ public class DateTime {
         if (!time.isBlank()) {
             if (time.contains("am") || time.contains("AM") || time.contains("pm") || time.contains("PM")) {
                 try {
-                    LocalTime startTime = LocalTime.parse(time.toUpperCase(Locale.ROOT), DateTimeFormatter.ofPattern("H:mm a"));
+                    LocalTime startTime = LocalTime.parse(time.toUpperCase(Locale.ROOT), DateTimeFormatter.ofPattern("h:mm a"));
                     return LocalDateTime.of(date, startTime);
                 } catch (Exception e) {
                     try {

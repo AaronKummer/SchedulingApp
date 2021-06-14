@@ -63,7 +63,6 @@ public class LoginController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         try {
             rb = ResourceBundle.getBundle("ViewProperties.login", Locale.getDefault());
-            System.out.println("After rb");
             LoginLabel.setText(rb.getString("title"));
             LoginUsernameLabel.setText(rb.getString("username"));
             UsernameTextField.setPromptText(rb.getString("username"));
@@ -102,6 +101,9 @@ public class LoginController implements Initializable {
             }
             if(Locale.getDefault().getLanguage().equals("es")){
                 noMatch.setContentText("El nombre de usuario y la contraseña no coinciden.");
+            }
+            if(Locale.getDefault().getLanguage().contains("fr")){
+                noMatch.setContentText("vérifier les informations d'identification et réessayer");
             }
             this.userID = null;
             noMatch.setTitle("");
