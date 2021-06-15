@@ -7,11 +7,9 @@ import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -55,13 +53,16 @@ public class LoginController implements Initializable {
     private Button LoginButton;
     @FXML
     private Label LoginLabel;
-
+    @FXML
+    private Label timeZoneLabel;
     /**
      * initialize controller
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         try {
+            System.out.println(Locale.getDefault().getLanguage());
+            timeZoneLabel.setText("( " + ZoneId.systemDefault().getDisplayName( TextStyle.FULL_STANDALONE , Locale.US ) + " )");
             rb = ResourceBundle.getBundle("ViewProperties.login", Locale.getDefault());
             LoginLabel.setText(rb.getString("title"));
             LoginUsernameLabel.setText(rb.getString("username"));
@@ -84,6 +85,7 @@ public class LoginController implements Initializable {
         this.userID = null;
         Parent root;
         Stage stage;
+
         var userId = CheckPassword(usernameInput, passwordInput);
         if (userId != null) {
             this.logLoginSuccess(usernameInput);
@@ -101,14 +103,20 @@ public class LoginController implements Initializable {
             }
             if(Locale.getDefault().getLanguage().equals("es")){
                 noMatch.setContentText("El nombre de usuario y la contraseña no coinciden.");
+                noMatch.setHeaderText("credenciales no válidas");
+                noMatch.setContentText("usuario no encontrado");
             }
             if(Locale.getDefault().getLanguage().contains("fr")){
                 noMatch.setContentText("vérifier les informations d'identification et réessayer");
+                noMatch.setHeaderText("Les informations d'identification invalides");
+                noMatch.setContentText("utilisateur non trouvé");
+            } else {
+                noMatch.setHeaderText("Invalid Credentials");
+                noMatch.setContentText("User not found, or incorrect password.");
             }
             this.userID = null;
             noMatch.setTitle("");
-            noMatch.setHeaderText("Invalid Credentials");
-            noMatch.setContentText("User not found, or incorrect password.");
+
             Optional<ButtonType> result = noMatch.showAndWait();
         }
     }
@@ -117,13 +125,14 @@ public class LoginController implements Initializable {
      * checks for appointments within 15 min
      */
     private void checkAppointments(Integer userId) {
-        var appointmentsForUser = Appointment.getAppointmentsForUser(userId);
+        var allAppointments = Appointment.getAppointmentList();
         var noUrgerntAppointments = true;
-        for (Appointment apt : appointmentsForUser) {
+        for (Appointment apt : allAppointments) {
             // check if same date as today
             var aptDate = apt.getDateAsLocalDate();
             if (DateTime.isToday(aptDate)) {
-                var localTime = apt.getStartTimeASLocalTime();
+
+                var localTime = LocalDateTime.parse(apt.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a"));
                 long minutes = ChronoUnit.MINUTES.between(LocalTime.now(DateTime.getZoneId()), localTime);
                 // check for appointments within 15 minutes from now
                 if (minutes <= 15 && minutes > 0) {
@@ -151,9 +160,9 @@ public class LoginController implements Initializable {
      */
     public void logLoginSuccess(String user) {
         try {
-            String fileName = "loginLogs.txt";
+            String fileName = "login_activity.txt";
             BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
-            writer.append(DateTime.getNowTimeStamp() + " " + user + " " + "\n");
+            writer.append(DateTime.getNowTimeStamp() + " " + user + " login successful " + "\n");
             writer.flush();
             writer.close();
         } catch (IOException e) {
@@ -162,13 +171,13 @@ public class LoginController implements Initializable {
     }
 
     /**
-     * logs login success
+     * logs login attempt
      */
     public void logLoginAttempt(String user) {
         try {
             String fileName = "login_activity.txt";
             BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
-            writer.append(DateTime.getNowTimeStamp() + " " + user + " " + "\n");
+            writer.append(DateTime.getNowTimeStamp() + " " + user + " login failed " + "\n");
             writer.flush();
             writer.close();
         } catch (IOException e) {

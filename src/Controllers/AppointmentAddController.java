@@ -189,20 +189,19 @@ public class AppointmentAddController implements Initializable {
      * @param end
      * @return
      */
-    public static Boolean appointmentExists(LocalDateTime start, LocalDateTime end){
+    public static Boolean appointmentOverlaps(LocalDateTime start, LocalDateTime end){
         Boolean returnValue = false;
+        Integer updatedAppointmentId = 0;
+        if (AppointmentsMainController.selectedAppointment != null) {
+            updatedAppointmentId = AppointmentsMainController.selectedAppointment.getAppointmentID();
+        }
         ObservableList<Appointment> appointments = Appointment.getAppointmentList();
-
         for(Appointment a : appointments) {
             LocalDateTime startTime = a.getStartTimeASLocalDateTime();
             LocalDateTime endEnd = a.getEndTimeASLocalDateTime();
-            if (AppointmentsMainController.selectedAppointment != null) {
-                if (AppointmentsMainController.selectedAppointment.getAppointmentID() == a.getAppointmentID()) {
-                    return false;
-                } else
-                if(start.isAfter(startTime) && start.isBefore(endEnd) || end.isAfter(startTime) && end.isBefore(endEnd)) {
-                    returnValue = true;
-                }
+
+            if((start.isAfter(startTime) && start.isBefore(endEnd) || end.isAfter(startTime) && end.isBefore(endEnd)) && a.getAppointmentID() != updatedAppointmentId) {
+                returnValue = true;
             }
         }
         return returnValue;
@@ -229,7 +228,7 @@ public class AppointmentAddController implements Initializable {
             return;
         }
 
-        if(this.appointmentExists(startTime, endTime)){
+        if(this.appointmentOverlaps(startTime, endTime)){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setContentText("Appointment cannot overlap another appointment.");
             alert.show();

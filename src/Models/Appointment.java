@@ -86,8 +86,6 @@ public class Appointment {
         return this.endTime;
     }
 
-
-
     public String getCustomerName(){
         return this.customerName;
     }
@@ -414,17 +412,7 @@ public class Appointment {
      *
      * @return
      */
-    public LocalTime getStartTimeASLocalTime() {
-        return LocalDateTime.parse(this.getStart(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(ZoneId.systemDefault()).toLocalTime();
-    }
 
-    /**
-     *
-     * @return
-     */
-    public LocalTime getEndTimeASLocalTime() {
-        return LocalDateTime.parse(this.getEnd(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).atZone(ZoneId.systemDefault()).toLocalTime();
-    }
 
     /**
      *
@@ -493,11 +481,4 @@ public class Appointment {
         this.userID = userID;
     }
 
-    public String getFormattedStartTime() {
-        return this.getStartTimeASLocalTime().format(DateTimeFormatter.ofPattern("h:m a"));
-    }
-
-    public String getFormattedEndTime() {
-        return this.getEndTimeASLocalDateTime().format(DateTimeFormatter.ofPattern("h:m a"));
-    }
 }

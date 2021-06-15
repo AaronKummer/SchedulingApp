@@ -8,7 +8,13 @@
       <file value="file://$PROJECT_DIR$/src/ViewProperties/login.properties" />
       <file value="file://$PROJECT_DIR$/src/ViewProperties/login_en.properties" />
       <file value="file://$PROJECT_DIR$/src/ViewProperties/login_es.properties" />
-      <file value="file://$PROJECT_DIR$/src/ViewProperties/login_french.properties" />
+      <base-name>login</base-name>
+    </custom-resource-bundle>
+    <custom-resource-bundle>
+      <file value="file://$PROJECT_DIR$/src/ViewProperties/login.properties" />
+      <file value="file://$PROJECT_DIR$/src/ViewProperties/login_en.properties" />
+      <file value="file://$PROJECT_DIR$/src/ViewProperties/login_es.properties" />
+      <file value="file://$PROJECT_DIR$/src/ViewProperties/login_fr.properties" />
       <base-name>login</base-name>
     </custom-resource-bundle>
   </component>

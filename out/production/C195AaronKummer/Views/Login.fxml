@@ -32,9 +32,14 @@
             <Button fx:id="LoginButton" layoutX="189.0" layoutY="125.0" mnemonicParsing="false" onAction="#LoginButtonHandler" text="Login" />
          </children>
       </AnchorPane>
-      <Label fx:id="LoginLabel" alignment="TOP_CENTER" layoutX="146.0" layoutY="14.0" text="Login" textAlignment="CENTER" textFill="#160101">
+      <Label fx:id="LoginLabel" alignment="TOP_CENTER" layoutX="246.0" layoutY="14.0" text="Login" textAlignment="CENTER" textFill="#160101">
          <font>
-            <Font name="System Bold Italic" size="26.0" />
+            <Font name="System Bold Italic" size="22.0" />
+         </font>
+      </Label>
+      <Label fx:id="timeZoneLabel" alignment="TOP_LEFT" layoutX="20.0" layoutY="14.0" text="" textAlignment="CENTER" textFill="#160101">
+         <font>
+            <Font name="System Bold Italic" size="18.0" />
          </font>
       </Label>
    </children>
